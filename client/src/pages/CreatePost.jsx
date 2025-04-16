@@ -56,6 +56,7 @@ const CreatePost = () => {
             value={form.name}
             handleChange={handleChange}
           />
+
           <FormField
             labelName="Prompt"
             type="text"
@@ -94,6 +95,7 @@ const CreatePost = () => {
               </div>
             )}
           </div>
+
           <div className="mt-5 flex gap-5">
             <button
               type="button"
@@ -118,13 +120,12 @@ const CreatePost = () => {
               font-medium rounded-md text-sm w-full sm:w-auto px-5 py-2.5 text-center"
             >
               {loading ? 'Sharing...' : 'Share with the community'}
-
             </button>
+
           </div>
 
         </div>
       </form>
-
     </section>
   )
 }
