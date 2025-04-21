@@ -17,8 +17,50 @@ const CreatePost = () => {
   const [generatingImg, setGeneratingImg] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const generateImage = () => {
+  const generateImage = async () => {
+    if (form.prompt) {
+      try {
+        setGeneratingImg(true);
+        console.log('abl el fetch');
+        console.log("Sending prompt:", form.prompt);
 
+        const response = await fetch('http://localhost:5000/api/v1/dalle',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: form.prompt }),
+          }
+        );
+        console.log('b3d el fetch');
+        // if (!response.ok) {
+        //   const errorData = await response.json();
+        //   throw new Error(errorData.error || 'Failed to generate image');
+        // }
+
+        // const data = await response.json();
+
+        //setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` })
+        // setForm({ ...form, photo: data.photo });
+        
+        console.log(response);
+
+        const data = await response.blob();
+        setForm({ ...form, photo: data.photo });
+
+        // setForm({ ...form, photo: imageObjectUrl }); // Set the photo state to the image URL
+      } catch (error) {
+        console.log('hena ya3abeita')
+        alert(error.message);
+      } finally {
+        {
+          setGeneratingImg(false);
+        }
+      }
+    } else {
+      alert('Please enter a prompt');
+    }
   }
 
   const handleSubmit = () => {
