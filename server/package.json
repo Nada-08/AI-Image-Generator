@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@api/picsartfordevelopers": "file:.api/apis/picsartfordevelopers",
     "@google/genai": "^0.9.0",
     "axios": "^1.8.4",
     "cloudinary": "^2.6.0",
@@ -22,6 +23,7 @@
     "nodemon": "^3.1.9",
     "openai": "^4.95.0",
     "picogenai": "^0.1.2-beta",
-    "replicate": "^1.0.1"
+    "replicate": "^1.0.1",
+    "together-ai": "^0.16.0"
   }
 }
