@@ -30,7 +30,7 @@ router.route("/").post(async (req, res) => {
 
     console.log("Image generated successfully!");
 
-    res.status(200).json({ photo: imageUrl });
+    res.status(201).json({ success: true, photo: imageUrl });
   } catch (error) {
     console.log("Error generating Image.\n", error);
   }

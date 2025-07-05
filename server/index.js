@@ -1,34 +1,35 @@
-import express from 'express';
-import * as dotenv from 'dotenv';
-import cors from 'cors';
+import express from "express";
+import * as dotenv from "dotenv";
+import cors from "cors";
 
-import connectDB from './mongodb/connect.js';
-import postRoutes from './routes/postRoutes.js';
-import dalleRoutes from './routes/fluxRoutes.js';
+import connectDB from "./mongodb/connect.js";
+import postRoutes from "./routes/postRoutes.js";
+import fluxRoutes from "./routes/fluxRoutes.js";
+import downloadRoutes from "./routes/downloadRoutes.js";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: "50mb" }));
 
-app.use('/api/v1/post', postRoutes);
-app.use('/api/v1/flux', dalleRoutes);
+app.use("/api/v1/post", postRoutes);
+app.use("/api/v1/flux", fluxRoutes);
+app.use("/api/v1/download", downloadRoutes);
 
-app.get('/', async (req, res) => {
-    res.send('Hello from FLUX!');
-})
+app.get("/", async (req, res) => {
+  res.send("Hello from FLUX!");
+});
 
 const startServer = async () => {
-    try {
-        connectDB(process.env.MONGODB_URL);
-        app.listen(5000, () => console.log(
-            'Server has started on port http://localhost:5000'))
-    } catch (error) {
-        console.log(error);
-    }
-
-
-}
+  try {
+    connectDB(process.env.MONGODB_URL);
+    app.listen(5000, () =>
+      console.log("Server has started on port http://localhost:5000")
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 startServer();

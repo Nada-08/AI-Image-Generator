@@ -1,77 +1,113 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-import { preview } from '../assets';
-import { getRandomPrompt } from '../utils';
-import { FormField, Loader } from '../components';
+import { preview } from "../assets";
+import { getRandomPrompt } from "../utils";
+import { FormField, Loader } from "../components";
+import FileSaver from "file-saver";
 
 const CreatePost = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState(
-    {
-      name: '',
-      prompt: '',
-      photo: '',
-    }
-  );
-  const [generatingImg, setGeneratingImg] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    prompt: "",
+    photo: "",
+  });
+  const [generatingImg] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const generateImage = async () => {
     if (form.prompt) {
       try {
-        setGeneratingImg(true);
+        setDownloading(true);
 
-        const response = await fetch('http://localhost:5000/api/v1/flux', {
-          method: 'POST',
+        const response = await fetch("http://localhost:5000/api/v1/flux", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ prompt: form.prompt }),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate image');
+          throw new Error(errorData.error || "Failed to generate image");
         }
 
         const data = await response.json();
         setForm({ ...form, photo: data.photo });
-
       } catch (error) {
         alert(error.message);
       } finally {
-        {
-          setGeneratingImg(false);
-        }
+        setDownloading(false);
       }
     } else {
-      alert('Please enter a prompt');
+      alert("Please enter a prompt");
     }
-  }
+  };
 
-  const handleSubmit = () => {
+  const handleDownload = async (imageUrl) => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/v1/download?url=${encodeURIComponent(
+          imageUrl
+        )}`
+      );
+      const blob = await res.blob();
+      FileSaver.saveAs(blob, "generated-image.jpg");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (form.prompt && form.photo) {
+      setLoading(true);
+
+      try {
+        const response = await fetch("http://localhost:5000/api/v1/post", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        });
+
+        await response.json();
+
+        navigate("/");
+      } catch (error) {
+        alert(error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert("Please enter a prompt and generate an image");
+    }
+  };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-
   const handleSurpriseMe = () => {
     const randomPrompt = getRandomPrompt(form.prompt);
-    setForm({ ...form, prompt: randomPrompt })
-  }
+    setForm({ ...form, prompt: randomPrompt });
+  };
 
   return (
     <section className="max-w-7xl mx-auto">
       <div>
-        <h1 className="font-extrabold text-[#222328] text-[32px]">
-          Create
-        </h1>
+        <h1 className="font-extrabold text-[#222328] text-[32px]">Create</h1>
         <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">
-          Create through a collection of imaginative and visually stunning images through DALL-E AI and share them with the commmunity
+          Create imaginative and visually stunning images with the power of AI —
+          then share your creations with the community.
         </p>
       </div>
 
@@ -97,7 +133,8 @@ const CreatePost = () => {
             handleSurpriseMe={handleSurpriseMe}
           />
 
-          <div className="relative bg-gray-50 border 
+          <div
+            className="relative bg-gray-50 border 
             border-gray-300 text-gray-900 text-sm rounded-lg 
             focus:ring-blue-500 focus:border-blue-500 w-64 p-3 
             h-64 flex justify-center items-center"
@@ -118,8 +155,10 @@ const CreatePost = () => {
             )}
 
             {generatingImg && (
-              <div className="absolute inset-0 z-0 flex 
-          justify-center items-center bg-[rgba(0,0,0,0.5)] rounded-lg">
+              <div
+                className="absolute inset-0 z-0 flex 
+          justify-center items-center bg-[rgba(0,0,0,0.5)] rounded-lg"
+              >
                 <Loader />
               </div>
             )}
@@ -133,14 +172,23 @@ const CreatePost = () => {
               rounded-md text-sm sm:w-auto px-5 py-2.5 
               text-center"
             >
-              {generatingImg ? 'Generating...' : 'Generate'}
+              {generatingImg ? "Generating..." : "Generate"}
             </button>
+            {form.photo && (
+              <button
+                type="button"
+                onClick={() => handleDownload(form.photo)}
+                className="text-white bg-[#6469ff] font-medium rounded-md text-sm sm:w-auto px-5 py-2.5 text-center"
+              >
+                {downloading ? "Downloading..." : "Download"}
+              </button>
+            )}
           </div>
 
           <div className="mt-10">
             <p className="mt-2 text-[#666e75] text-[14px]">
-              Once you have created the image you want, you can
-              share it with others in the community
+              Once you have created the image you want, you can share it with
+              others in the community
             </p>
 
             <button
@@ -148,15 +196,13 @@ const CreatePost = () => {
               className="mt-3 text-white bg-[#6469ff] 
               font-medium rounded-md text-sm w-full sm:w-auto px-5 py-2.5 text-center"
             >
-              {loading ? 'Sharing...' : 'Share with the community'}
+              {loading ? "Sharing..." : "Share with the community"}
             </button>
-
           </div>
-
         </div>
       </form>
     </section>
-  )
-}
+  );
+};
 
-export default CreatePost
+export default CreatePost;
